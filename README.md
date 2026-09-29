@@ -146,7 +146,6 @@ pytest -q
 ## 7. Arquitetura de produção
 
 A POC roda localmente (Python + MLflow); o mesmo racional escala para produção.
-Detalhes completos em [`architecture.md`](architecture.md).
 
 **Fluxo (arquitetura Medalhão):**
 
