@@ -145,10 +145,29 @@ pytest -q
 
 ## 7. Arquitetura de produção
 
-Ver [`docs/architecture.md`](docs/architecture.md): fluxo Medalhão
-(Bronze/Silver/Gold), retreino/governança de modelo, observabilidade (drift),
-escalabilidade de 1 → N pontos de venda, e **tabela de equivalência
-AWS ↔ Azure/Databricks** (o MLflow é a peça comum aos dois).
+A POC roda localmente (Python + MLflow); o mesmo racional escala para produção.
+Detalhes completos em [`architecture.md`](architecture.md).
+
+**Fluxo (arquitetura Medalhão):**
+
+```
+Máquina/PDV → Ingestão → Bronze (cru) → Silver (limpo) → Gold (features)
+   → Treino/Retreino → MLflow Registry → Inferência batch → BI / API
+   → Observabilidade (erro real vs. previsto, drift) → trigger de retreino
+```
+
+- **Camadas Medalhão:** Bronze (dado bruto imutável), Silver (limpo/validado),
+  Gold (features e agregações prontas para o modelo).
+- **Governança:** promoção Staging → Production e rollback via MLflow Registry;
+  um novo modelo só é promovido se superar o baseline e o modelo vigente.
+- **Observabilidade:** performance (real vs. previsto), data drift e alertas,
+  com retreino agendado ou disparado por degradação.
+- **Escalabilidade 1 → N:** o mesmo desenho suporta uma rede de máquinas, via
+  previsão hierárquica e um modelo global multi-máquina (em vez de um por máquina).
+- **Stack:** referência em AWS (S3, Glue/EMR, SageMaker/MLflow, Step Functions,
+  CloudWatch) com **equivalência direta em Azure/Databricks** (ADLS+Delta,
+  Databricks, Unity Catalog, Workflows, Lakehouse Monitoring). O **MLflow** é a
+  peça comum aos dois ecossistemas e já é usado nesta POC.
 
 ---
 
