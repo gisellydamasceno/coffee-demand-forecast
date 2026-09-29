@@ -1,0 +1,43 @@
+# Configuração central do projeto.
+# Manter parâmetros fora do código é boa prática de engenharia:
+# permite reprodutibilidade e mudança de comportamento sem editar a lógica.
+
+data:
+  kaggle_dataset: "ihelon/coffee-sales"
+  # index_1 é a base principal (~1 ano, consistente).
+  # index_2 é um período experimental com outros produtos -> analisado à parte.
+  primary_file: "index_1.csv"
+  experimental_file: "index_2.csv"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+target:
+  # Alvo principal: RECEITA diária.
+  # 'transactions' fica como alvo secundário (demanda pura), mesmo pipeline.
+  primary: "revenue"
+  date_col: "date"
+  value_col: "money"
+  product_col: "coffee_name"
+
+forecast:
+  frequency: "D"          # granularidade diária
+  seasonal_period: 7      # sazonalidade semanal (dia da semana)
+  horizon: 14             # horizonte de previsão (dias)
+
+backtest:
+  # Validação temporal (walk-forward / expanding window).
+  n_splits: 5             # número de dobras temporais
+  test_size: 14           # tamanho de cada janela de teste (dias)
+  min_train_size: 180     # mínimo de dias de treino antes da 1ª dobra
+
+features:
+  lags: [1, 7, 14, 28]
+  rolling_windows: [7, 14, 28]
+
+mlflow:
+  experiment_name: "coffee-demand-forecast"
+  # Backend SQLite: o file store foi descontinuado no MLflow 3.x e o backend
+  # de banco é mais próximo de produção (Databricks/AWS usam DB como backend).
+  tracking_uri: "sqlite:///mlflow.db"
+
+random_seed: 42
